@@ -6,7 +6,7 @@ const router = express.Router();
 
 const validateUser = [
   body('name').trim().isLength({ min: 2, max: 100 }).withMessage('Name must be between 2-100 characters'),
-  body('phone').isMobilePhone().withMessage('Phone must be a valid mobile number')
+  body('phone').trim().isMobilePhone('any').withMessage('Phone must be a valid mobile number')
 ];
 
 const validateId = [

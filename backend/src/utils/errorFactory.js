@@ -1,32 +1,34 @@
 class AppError extends Error {
-    constructor(message, status = 500, type = 'AppError') {
+    constructor(message, statusCode = 500) {
       super(message);
-      this.status = status;
-      this.name = type;
+      this.statusCode = statusCode;
+      this.status = statusCode;
+      this.name = this.constructor.name;
+      Error.captureStackTrace(this, this.constructor);
     }
   }
   
   class ValidationError extends AppError {
     constructor(message) {
-      super(message, 400, 'ValidationError');
+      super(message, 400);
     }
   }
   
   class NotFoundError extends AppError {
     constructor(message) {
-      super(message, 404, 'NotFoundError');
+      super(message, 404);
     }
   }
   
-  class DatabaseError extends AppError {
+  class AuthenticationError extends AppError {
     constructor(message) {
-      super(message, 500, 'DatabaseError');
+      super(message, 401);
     }
   }
   
-  class UnauthorizedError extends AppError {
+  class AuthorizationError extends AppError {
     constructor(message) {
-      super(message, 401, 'UnauthorizedError');
+      super(message, 403);
     }
   }
   
@@ -34,7 +36,6 @@ class AppError extends Error {
     AppError,
     ValidationError,
     NotFoundError,
-    DatabaseError,
-    UnauthorizedError,
+    AuthenticationError,
+    AuthorizationError
   };
-  
