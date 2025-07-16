@@ -35,7 +35,7 @@ class CategoryController {
       
       res.status(500).json({
         success: false,
-        message: 'Internal server error',
+        message: 'Internal index error',
         error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
@@ -115,7 +115,7 @@ class CategoryController {
       
       res.status(500).json({
         success: false,
-        message: 'Internal server error',
+        message: 'Internal index error',
         error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }

@@ -1,26 +1,39 @@
-const { Pool } = require('pg');
+const mysql = require('mysql2/promise');
+require('dotenv').config({ path: '../../.env' });
 
-const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
+// Simple pool connection
+const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'AILearningPlatform', 
-  password: process.env.DB_PASSWORD || 'password123',
-  port: process.env.DB_PORT || 5432,
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || 'AILearningPlatform',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-// Test connection
-pool.on('connect', () => {
-  console.log('✅ Connected to PostgreSQL database');
-});
-
-pool.on('error', (err) => {
-  console.error('❌ Database error:', err.message);
-});
-
-// Helper functions
-const query = (text, params) => pool.query(text, params);
-
-module.exports = {
-  pool,
-  query
+const testConnection = async () => {
+  try {
+    const connection = await pool.getConnection();
+    console.log('Connected to MySQL database successfully');
+    connection.release();
+  } catch (error) {
+    console.error('Database connection failed:', error.message);
+    process.exit(1);
+  }
 };
+
+const query = async (sql, params = []) => {
+  try {
+    const [rows] = await pool.execute(sql, params);
+    return rows;
+  } catch (error) {
+    console.error('Database query error:', error.message);
+    throw error;
+  }
+};
+
+testConnection();
+
+module.exports = { pool, query };

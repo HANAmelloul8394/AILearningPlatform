@@ -1,8 +1,7 @@
-// backend/src/controllers/adminController.js
 const userService = require('../services/userService');
 const promptService = require('../services/promptService');
 const categoryService = require('../services/categoryService');
-
+const { ValidationError } = require('../utils/errorFactory');
 class AdminController {
   async getDashboardStats(req, res) {
     try {

@@ -1,0 +1,755 @@
+{
+    "info": {
+      "name": "AI Learning Platform API",
+      "description": "Complete API testing collection for AI Learning Platform\n\nBase URL: http://localhost:5000\n\nThis collection includes:\n- Health checks\n- User management\n- Category management  \n- AI prompt generation\n- Admin dashboard\n\nMake sure your backend server is running before testing.",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+      "_postman_id": "ai-learning-platform-api",
+      "version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      }
+    },
+    "item": [
+      {
+        "name": "🏥 Health & Status",
+        "item": [
+          {
+            "name": "Health Check",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/health",
+                "host": ["{{base_url}}"],
+                "path": ["health"]
+              },
+              "description": "Check if the API server is running and healthy"
+            },
+            "response": []
+          },
+          {
+            "name": "Root Endpoint",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/",
+                "host": ["{{base_url}}"],
+                "path": [""]
+              },
+              "description": "Get basic API information"
+            },
+            "response": []
+          }
+        ],
+        "description": "Basic health and status endpoints"
+      },
+      {
+        "name": "👥 User Management",
+        "item": [
+          {
+            "name": "Create User",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"John Doe\",\n  \"phone\": \"+1234567890\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/users",
+                "host": ["{{base_url}}"],
+                "path": ["api", "users"]
+              },
+              "description": "Create a new user with name and phone number"
+            },
+            "response": []
+          },
+          {
+            "name": "Get All Users",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/users",
+                "host": ["{{base_url}}"],
+                "path": ["api", "users"]
+              },
+              "description": "Retrieve all users in the system"
+            },
+            "response": []
+          },
+          {
+            "name": "Get User by ID",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/users/{{user_id}}",
+                "host": ["{{base_url}}"],
+                "path": ["api", "users", "{{user_id}}"]
+              },
+              "description": "Get specific user details by ID"
+            },
+            "response": []
+          },
+          {
+            "name": "Get User History",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/users/{{user_id}}/history?page=1&limit=10",
+                "host": ["{{base_url}}"],
+                "path": ["api", "users", "{{user_id}}", "history"],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  }
+                ]
+              },
+              "description": "Get user's prompt history with pagination"
+            },
+            "response": []
+          },
+          {
+            "name": "Create User (Invalid Phone)",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Test User\",\n  \"phone\": \"invalid-phone\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/users",
+                "host": ["{{base_url}}"],
+                "path": ["api", "users"]
+              },
+              "description": "Test validation error with invalid phone number"
+            },
+            "response": []
+          }
+        ],
+        "description": "User management endpoints"
+      },
+      {
+        "name": "📁 Category Management",
+        "item": [
+          {
+            "name": "Create Category",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Programming\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/categories",
+                "host": ["{{base_url}}"],
+                "path": ["api", "categories"]
+              },
+              "description": "Create a new learning category"
+            },
+            "response": []
+          },
+          {
+            "name": "Create Category - Mathematics",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Mathematics\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/categories",
+                "host": ["{{base_url}}"],
+                "path": ["api", "categories"]
+              },
+              "description": "Create Mathematics category"
+            },
+            "response": []
+          },
+          {
+            "name": "Create Category - Science",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Science\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/categories",
+                "host": ["{{base_url}}"],
+                "path": ["api", "categories"]
+              },
+              "description": "Create Science category"
+            },
+            "response": []
+          },
+          {
+            "name": "Get All Categories",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/categories",
+                "host": ["{{base_url}}"],
+                "path": ["api", "categories"]
+              },
+              "description": "Retrieve all categories"
+            },
+            "response": []
+          },
+          {
+            "name": "Get Category by ID",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/categories/{{category_id}}",
+                "host": ["{{base_url}}"],
+                "path": ["api", "categories", "{{category_id}}"]
+              },
+              "description": "Get specific category by ID"
+            },
+            "response": []
+          },
+          {
+            "name": "Create Sub-Category - JavaScript",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"JavaScript\",\n  \"category_id\": {{category_id}}\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/categories/sub-categories",
+                "host": ["{{base_url}}"],
+                "path": ["api", "categories", "sub-categories"]
+              },
+              "description": "Create JavaScript sub-category under Programming"
+            },
+            "response": []
+          },
+          {
+            "name": "Create Sub-Category - Python",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Python\",\n  \"category_id\": {{category_id}}\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/categories/sub-categories",
+                "host": ["{{base_url}}"],
+                "path": ["api", "categories", "sub-categories"]
+              },
+              "description": "Create Python sub-category under Programming"
+            },
+            "response": []
+          },
+          {
+            "name": "Get Sub-Categories",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/categories/{{category_id}}/sub-categories",
+                "host": ["{{base_url}}"],
+                "path": ["api", "categories", "{{category_id}}", "sub-categories"]
+              },
+              "description": "Get all sub-categories for a specific category"
+            },
+            "response": []
+          }
+        ],
+        "description": "Category and sub-category management"
+      },
+      {
+        "name": "AI Prompts & Lessons",
+        "item": [
+          {
+            "name": "Create AI Lesson - JavaScript Variables",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"user_id\": {{user_id}},\n  \"category_id\": {{category_id}},\n  \"sub_category_id\": {{sub_category_id}},\n  \"prompt\": \"Explain JavaScript variables with examples and best practices\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/prompts",
+                "host": ["{{base_url}}"],
+                "path": ["api", "prompts"]
+              },
+              "description": "Generate an AI lesson about JavaScript variables"
+            },
+            "response": []
+          },
+          {
+            "name": "Create AI Lesson - Functions",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"user_id\": {{user_id}},\n  \"category_id\": {{category_id}},\n  \"sub_category_id\": {{sub_category_id}},\n  \"prompt\": \"Teach me about JavaScript functions, including arrow functions and closures\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/prompts",
+                "host": ["{{base_url}}"],
+                "path": ["api", "prompts"]
+              },
+              "description": "Generate an AI lesson about JavaScript functions"
+            },
+            "response": []
+          },
+          {
+            "name": "Create AI Lesson - Async Programming",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"user_id\": {{user_id}},\n  \"category_id\": {{category_id}},\n  \"sub_category_id\": {{sub_category_id}},\n  \"prompt\": \"Explain asynchronous programming in JavaScript with promises and async/await\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/prompts",
+                "host": ["{{base_url}}"],
+                "path": ["api", "prompts"]
+              },
+              "description": "Generate an AI lesson about asynchronous programming"
+            },
+            "response": []
+          },
+          {
+            "name": "Get All Prompts",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/prompts?page=1&limit=10",
+                "host": ["{{base_url}}"],
+                "path": ["api", "prompts"],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  }
+                ]
+              },
+              "description": "Get all prompts with pagination"
+            },
+            "response": []
+          },
+          {
+            "name": "Get Prompt by ID",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/prompts/{{prompt_id}}",
+                "host": ["{{base_url}}"],
+                "path": ["api", "prompts", "{{prompt_id}}"]
+              },
+              "description": "Get specific prompt/lesson by ID"
+            },
+            "response": []
+          },
+          {
+            "name": "Get User Prompts",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/prompts/user/{{user_id}}?page=1&limit=5",
+                "host": ["{{base_url}}"],
+                "path": ["api", "prompts", "user", "{{user_id}}"],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "5"
+                  }
+                ]
+              },
+              "description": "Get all prompts created by specific user"
+            },
+            "response": []
+          },
+          {
+            "name": "Delete Prompt",
+            "request": {
+              "method": "DELETE",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/prompts/{{prompt_id}}",
+                "host": ["{{base_url}}"],
+                "path": ["api", "prompts", "{{prompt_id}}"]
+              },
+              "description": "Delete a specific prompt/lesson"
+            },
+            "response": []
+          },
+          {
+            "name": "Create Lesson (Validation Error)",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"user_id\": \"invalid\",\n  \"category_id\": \"invalid\",\n  \"sub_category_id\": \"invalid\",\n  \"prompt\": \"Hi\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/prompts",
+                "host": ["{{base_url}}"],
+                "path": ["api", "prompts"]
+              },
+              "description": "Test validation errors with invalid data"
+            },
+            "response": []
+          }
+        ],
+        "description": "AI-powered lesson generation and management"
+      },
+      {
+        "name": "Admin Dashboard",
+        "item": [
+          {
+            "name": "Get Dashboard Stats",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/admin/dashboard",
+                "host": ["{{base_url}}"],
+                "path": ["api", "admin", "dashboard"]
+              },
+              "description": "Get overall platform statistics"
+            },
+            "response": []
+          },
+          {
+            "name": "Get Users with History",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/admin/users?page=1&limit=10",
+                "host": ["{{base_url}}"],
+                "path": ["api", "admin", "users"],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  }
+                ]
+              },
+              "description": "Get all users with their usage history"
+            },
+            "response": []
+          },
+          {
+            "name": "Get Prompts with Details",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/admin/prompts?page=1&limit=10",
+                "host": ["{{base_url}}"],
+                "path": ["api", "admin", "prompts"],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  }
+                ]
+              },
+              "description": "Get all prompts with detailed information"
+            },
+            "response": []
+          },
+          {
+            "name": "Get User Analytics",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/admin/users/{{user_id}}/analytics",
+                "host": ["{{base_url}}"],
+                "path": ["api", "admin", "users", "{{user_id}}", "analytics"]
+              },
+              "description": "Get detailed analytics for specific user"
+            },
+            "response": []
+          },
+          {
+            "name": "Get Category Analytics",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/admin/categories/analytics",
+                "host": ["{{base_url}}"],
+                "path": ["api", "admin", "categories", "analytics"]
+              },
+              "description": "Get category usage analytics"
+            },
+            "response": []
+          },
+          {
+            "name": "Export Users Data",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/admin/export?type=users&format=json",
+                "host": ["{{base_url}}"],
+                "path": ["api", "admin", "export"],
+                "query": [
+                  {
+                    "key": "type",
+                    "value": "users"
+                  },
+                  {
+                    "key": "format",
+                    "value": "json"
+                  }
+                ]
+              },
+              "description": "Export users data in JSON format"
+            },
+            "response": []
+          },
+          {
+            "name": "Export Prompts Data",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/admin/export?type=prompts&format=json",
+                "host": ["{{base_url}}"],
+                "path": ["api", "admin", "export"],
+                "query": [
+                  {
+                    "key": "type",
+                    "value": "prompts"
+                  },
+                  {
+                    "key": "format",
+                    "value": "json"
+                  }
+                ]
+              },
+              "description": "Export prompts data in JSON format"
+            },
+            "response": []
+          }
+        ],
+        "description": "Administrative functions and analytics"
+      },
+      {
+        "name": "Test Scenarios",
+        "item": [
+          {
+            "name": "Complete Workflow Test",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/health",
+                "host": ["{{base_url}}"],
+                "path": ["health"]
+              },
+              "description": "Start with health check, then manually run:\n1. Create User\n2. Create Categories\n3. Create Sub-categories\n4. Generate AI Lessons\n5. Check Admin Dashboard"
+            },
+            "response": []
+          },
+          {
+            "name": "Database Connection Test",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/users",
+                "host": ["{{base_url}}"],
+                "path": ["api", "users"]
+              },
+              "description": "Test database connectivity by fetching users"
+            },
+            "response": []
+          },
+          {
+            "name": "Error Handling Test",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/users/99999",
+                "host": ["{{base_url}}"],
+                "path": ["api", "users", "99999"]
+              },
+              "description": "Test 404 error handling with non-existent user ID"
+            },
+            "response": []
+          }
+        ],
+        "description": "Complete testing scenarios and edge cases"
+      }
+    ],
+    "variable": [
+      {
+        "key": "base_url",
+        "value": "http://localhost:5000",
+        "description": "Base URL for the API server"
+      },
+      {
+        "key": "user_id",
+        "value": "1",
+        "description": "User ID for testing (update after creating users)"
+      },
+      {
+        "key": "category_id",
+        "value": "1",
+        "description": "Category ID for testing (update after creating categories)"
+      },
+      {
+        "key": "sub_category_id",
+        "value": "1",
+        "description": "Sub-category ID for testing (update after creating sub-categories)"
+      },
+      {
+        "key": "prompt_id",
+        "value": "1",
+        "description": "Prompt ID for testing (update after creating prompts)"
+      }
+    ],
+    "event": [
+      {
+        "listen": "prerequest",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "// Add timestamp to requests",
+            "pm.globals.set('timestamp', new Date().toISOString());"
+          ]
+        }
+      },
+      {
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "// Basic response validation",
+            "pm.test('Response status is successful', function () {",
+            "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]);",
+            "});",
+            "",
+            "// Check response format",
+            "pm.test('Response has success field', function () {",
+            "    const jsonData = pm.response.json();",
+            "    pm.expect(jsonData).to.have.property('success');",
+            "});",
+            "",
+            "// Auto-extract IDs for chaining requests",
+            "if (pm.response.code === 201) {",
+            "    const jsonData = pm.response.json();",
+            "    if (jsonData.data && jsonData.data.id) {",
+            "        if (pm.info.requestName.includes('User')) {",
+            "            pm.globals.set('user_id', jsonData.data.id);",
+            "        } else if (pm.info.requestName.includes('Category') && !pm.info.requestName.includes('Sub')) {",
+            "            pm.globals.set('category_id', jsonData.data.id);",
+            "        } else if (pm.info.requestName.includes('Sub-Category')) {",
+            "            pm.globals.set('sub_category_id', jsonData.data.id);",
+            "        } else if (pm.info.requestName.includes('Lesson') || pm.info.requestName.includes('Prompt')) {",
+            "            pm.globals.set('prompt_id', jsonData.data.id);",
+            "        }",
+            "    }",
+            "}"
+          ]
+        }
+      }
+    ]
+  }
