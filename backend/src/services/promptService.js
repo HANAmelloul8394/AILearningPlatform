@@ -1,207 +1,257 @@
-const { query } = require('../config/db');
+const { OpenAI } = require("openai");
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const { fn, col, literal, Op } = require('../../config/sequelize');
+const { Prompt, User, Category, SubCategory } = require('../models');
+const {
+  validateUserId,
+  validateCategoryId,
+  validateCreatePromptData,
+  validatePagination,
+  validateDateRange
+} = require('../utils/validationUtils');
+const { ValidationError } = require('../utils/errorFactory');
 
 class PromptService {
-  async getPromptCount() {
-    try {
-      const result = await query('SELECT COUNT(*) as count FROM prompts');
-      return parseInt(result.rows[0].count);
-    } catch (error) {
-      console.error('Error getting prompt count:', error);
-      return 0;
+  async getPromptByCategoryName(categoryName) {
+    if (!categoryName || typeof categoryName !== 'string') {
+      throw new ValidationError('Invalid category name');
     }
-  }
-
-  async getRecentActivity(days = 7) {
-    try {
-      const result = await query(`
-        SELECT DATE(created_at) as date, COUNT(*) as count
-        FROM prompts 
-        WHERE created_at >= NOW() - INTERVAL '${days} days'
-        GROUP BY DATE(created_at)
-        ORDER BY date DESC
-      `);
-      return result.rows;
-    } catch (error) {
-      console.error('Error getting recent activity:', error);
-      return [];
+  
+    const category = await Category.findOne({
+      where: { name: categoryName.trim() }
+    });
+  
+    if (!category) {
+      throw new ValidationError(`Category "${categoryName}" not found`);
     }
+  
+    const prompts = await Prompt.findAll({
+      where: { category_id: category.id },
+      include: [
+        { model: User, as: 'user', attributes: ['id', 'name'] },
+        { model: SubCategory, as: 'subCategory', attributes: ['id', 'name'] }
+      ],
+      order: [['created_at', 'DESC']]
+    });
+  
+    return {
+      category_name: category.name,
+      category_id: category.id,
+      total: prompts.length,
+      prompts: prompts.map(p => p.toJSON())
+    };
   }
 
   async getAllPrompts(options = {}) {
-    const { page = 1, limit = 10, user_id = null } = options;
-    const offset = (page - 1) * limit;
+    const { user_id = null, page = 1, limit = 10 } = options;
+    const pagination = validatePagination({ page, limit });
+    if (!pagination.isValid) throw new ValidationError(pagination.errors.join(', '));
 
-    try {
-      let queryText = `
-        SELECT p.*, u.name as user_name, c.name as category_name, sc.name as sub_category_name
-        FROM prompts p
-        JOIN users u ON p.user_id = u.id
-        JOIN categories c ON p.category_id = c.id
-        JOIN sub_categories sc ON p.sub_category_id = sc.id
-      `;
-      const params = [];
+    if (user_id && !validateUserId(user_id).isValid) {
+      throw new ValidationError('Invalid user ID');
+    }
 
-      if (user_id) {
-        queryText += ` WHERE p.user_id = $1`;
-        params.push(user_id);
-      }
+    const where = user_id ? { user_id } : {};
+    const { offset, limit: validLimit, page: validPage } = pagination.values;
 
-      queryText += ` ORDER BY p.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
-      params.push(limit, offset);
+    const { count: total, rows } = await Prompt.findAndCountAll({
+      where,
+      include: [
+        { model: User, as: 'user', attributes: ['id', 'name'] },
+        { model: Category, as: 'category', attributes: ['id', 'name'] },
+        { model: SubCategory, as: 'subCategory', attributes: ['id', 'name'] }
+      ],
+      attributes: {
+        include: [
+          [fn('LENGTH', col('response')), 'response_length'],
+          [fn('LENGTH', col('prompt')), 'prompt_length']
+        ]
+      },
+      order: [['created_at', 'DESC']],
+      limit: validLimit,
+      offset,
+      distinct: true
+    });
 
-      const result = await query(queryText, params);
-      
-      // Get total count
-      let countQuery = 'SELECT COUNT(*) FROM prompts';
-      const countParams = [];
-      if (user_id) {
-        countQuery += ' WHERE user_id = $1';
-        countParams.push(user_id);
-      }
-      
-      const countResult = await query(countQuery, countParams);
-      const total = parseInt(countResult.rows[0].count);
-
+    const totalPages = Math.ceil(total / validLimit);
       return {
-        prompts: result.rows,
+      prompts: rows.map(r => r.toJSON()),
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+        page: validPage,
+        limit: validLimit,
           total,
-          totalPages: Math.ceil(total / limit)
+        totalPages,
+        hasNextPage: validPage < totalPages,
+        hasPreviousPage: validPage > 1
         }
       };
-    } catch (error) {
-      console.error('Error getting prompts:', error);
-      throw error;
-    }
   }
 
   async getAllPromptsWithDetails(options = {}) {
-    const { page = 1, limit = 10, filters = {} } = options;
-    const offset = (page - 1) * limit;
+    const { filters = {}, page = 1, limit = 10 } = options;
+    const pagination = validatePagination({ page, limit });
+    if (!pagination.isValid) throw new ValidationError(pagination.errors.join(', '));
 
-    try {
-      let queryText = `
-        SELECT p.*, u.name as user_name, u.phone as user_phone,
-               c.name as category_name, sc.name as sub_category_name
-        FROM prompts p
-        JOIN users u ON p.user_id = u.id
-        JOIN categories c ON p.category_id = c.id
-        JOIN sub_categories sc ON p.sub_category_id = sc.id
-        WHERE 1=1
-      `;
-      const params = [];
+    const { offset, limit: validLimit, page: validPage } = pagination.values;
+    const where = {};
 
-      if (filters.category_id) {
-        queryText += ` AND p.category_id = $${params.length + 1}`;
-        params.push(filters.category_id);
-      }
-      if (filters.sub_category_id) {
-        queryText += ` AND p.sub_category_id = $${params.length + 1}`;
-        params.push(filters.sub_category_id);
-      }
-      if (filters.user_id) {
-        queryText += ` AND p.user_id = $${params.length + 1}`;
-        params.push(filters.user_id);
-      }
-      if (filters.start_date) {
-        queryText += ` AND p.created_at >= $${params.length + 1}`;
-        params.push(filters.start_date);
-      }
-      if (filters.end_date) {
-        queryText += ` AND p.created_at <= $${params.length + 1}`;
-        params.push(filters.end_date);
+    if (filters.user_id) where.user_id = filters.user_id;
+    if (filters.category_id) where.category_id = filters.category_id;
+    if (filters.sub_category_id) where.sub_category_id = filters.sub_category_id;
+
+    if (filters.start_date || filters.end_date) {
+      const dateValidation = validateDateRange(filters.start_date, filters.end_date);
+      if (!dateValidation.isValid) throw new ValidationError(dateValidation.errors.join(', '));
+
+      where.created_at = {
+        ...(filters.start_date && { [Op.gte]: filters.start_date }),
+        ...(filters.end_date && { [Op.lte]: filters.end_date })
+      };
       }
 
-      queryText += ` ORDER BY p.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
-      params.push(limit, offset);
+    const { count: total, rows } = await Prompt.findAndCountAll({
+      where,
+      include: [
+        { model: User, as: 'user', attributes: ['name', 'phone', 'created_at'] },
+        { model: Category, as: 'category', attributes: ['name'] },
+        { model: SubCategory, as: 'subCategory', attributes: ['name'] }
+      ],
+      attributes: {
+        include: [
+          [fn('LENGTH', col('prompt')), 'prompt_length'],
+          [fn('LENGTH', col('response')), 'response_length'],
+          [literal('TIMESTAMPDIFF(HOUR, `Prompt`.`created_at`, NOW())'), 'hours_ago']
+        ]
+      },
+      order: [['created_at', 'DESC']],
+      limit: validLimit,
+      offset
+    });
 
-      const result = await query(queryText, params);
-      return result.rows;
-    } catch (error) {
-      console.error('Error getting prompts with details:', error);
-      throw error;
-    }
-  }
-
-  async getPromptById(id) {
-    try {
-      const result = await query(`
-        SELECT p.*, u.name as user_name, c.name as category_name, sc.name as sub_category_name
-        FROM prompts p
-        JOIN users u ON p.user_id = u.id
-        JOIN categories c ON p.category_id = c.id
-        JOIN sub_categories sc ON p.sub_category_id = sc.id
-        WHERE p.id = $1
-      `, [id]);
-      
-      return result.rows.length > 0 ? result.rows[0] : null;
-    } catch (error) {
-      console.error('Error getting prompt by id:', error);
-      throw error;
-    }
+    const totalPages = Math.ceil(total / validLimit);
+    return {
+      prompts: rows.map(r => r.toJSON()),
+      pagination: {
+        page: validPage,
+        limit: validLimit,
+        total,
+        totalPages,
+        hasNextPage: validPage < totalPages,
+        hasPreviousPage: validPage > 1
+      }
+    };
   }
 
   async getUserPrompts(userId, options = {}) {
-    const { page = 1, limit = 10 } = options;
-    const offset = (page - 1) * limit;
+    const validation = validateUserId(userId);
+    if (!validation.isValid) throw new ValidationError(validation.error);
 
-    try {
-      const result = await query(`
-        SELECT p.*, c.name as category_name, sc.name as sub_category_name
-        FROM prompts p
-        JOIN categories c ON p.category_id = c.id
-        JOIN sub_categories sc ON p.sub_category_id = sc.id
-        WHERE p.user_id = $1
-        ORDER BY p.created_at DESC
-        LIMIT $2 OFFSET $3
-      `, [userId, limit, offset]);
+    const pagination = validatePagination(options);
+    if (!pagination.isValid) throw new ValidationError(pagination.errors.join(', '));
+console.log(`Fetching prompts for user ID: ${validation.value} with pagination:`, pagination);
 
-      const countResult = await query('SELECT COUNT(*) FROM prompts WHERE user_id = $1', [userId]);
-      const total = parseInt(countResult.rows[0].count);
+    const { offset, limit, page } = pagination.values;
 
+    const { count: total, rows } = await Prompt.findAndCountAll({
+      where: { user_id: validation.value },
+      include: [
+        { model: Category, as: 'category', attributes: ['name'] },
+        { model: SubCategory, as: 'subCategory', attributes: ['name'] }
+      ],
+      
+      attributes: {
+        include: [
+          [fn('LENGTH', col('response')), 'response_length'],
+          [fn('LENGTH', col('prompt')), 'prompt_length'],
+          [literal('TIMESTAMPDIFF(HOUR, Prompt.created_at, NOW())'), 'hours_ago']
+        ]
+      },
+      order: [[col('Prompt.created_at'), 'DESC']],
+      limit,
+      offset
+    });
+
+    const totalPages = Math.ceil(total / limit);
       return {
-        prompts: result.rows,
+      prompts: rows.map(r => r.toJSON()),
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+        page,
+        limit,
           total,
-          totalPages: Math.ceil(total / limit)
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1
         }
       };
-    } catch (error) {
-      console.error('Error getting user prompts:', error);
-      throw error;
-    }
   }
 
   async deletePrompt(id) {
+    const validation = validateCategoryId(id, 'prompt');
+    if (!validation.isValid) throw new ValidationError(validation.error);
+
+    const deleted = await Prompt.destroy({ where: { id: validation.value } });
+    return deleted > 0;
+  }
+
+  async createPrompt(data) {
+    const validation = validateCreatePromptData(data);
+    if (!validation.isValid) throw new ValidationError(validation.errors.join(', '));
+
+    const { user_id, category_id, sub_category_id, prompt } = validation.sanitizedData;
+
+    const aiPrompt = `
+      You are a professional educator. Please create a full lesson about the category ID ${category_id} and subcategory ID ${sub_category_id}.
+      Include title, intro, sections, examples, summary, and 3 questions.
+      The user also asked: "${prompt}"
+    `;
+
+    let aiResponseText = '';
+
     try {
-      const result = await query('DELETE FROM prompts WHERE id = $1 RETURNING id', [id]);
-      return result.rows.length > 0;
-    } catch (error) {
-      console.error('Error deleting prompt:', error);
-      throw error;
+      const aiResponse = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: "You are a helpful teaching assistant." },
+          { role: "user", content: aiPrompt }
+        ],
+        temperature: 0.6,
+        max_tokens: 1000
+      });
+      aiResponseText = aiResponse?.choices?.[0]?.message?.content || 'No content returned from AI';
+    } catch (err) {
+      console.error('OpenAI error:', err);
+      aiResponseText = `AI Error: ${err.message}`;
     }
+
+    const created = await Prompt.create({
+      user_id,
+      category_id,
+      sub_category_id,
+      prompt,
+      response: aiResponseText
+    });
+
+    return { success: true, data: created.toJSON() };
   }
 
   async exportPrompts() {
-    try {
-      const result = await query(`
-        SELECT p.*, u.name as user_name, u.phone as user_phone,
-               c.name as category_name, sc.name as sub_category_name
-        FROM prompts p
-        JOIN users u ON p.user_id = u.id
-        JOIN categories c ON p.category_id = c.id
-        JOIN sub_categories sc ON p.sub_category_id = sc.id
-        ORDER BY p.created_at DESC
-      `);
-      return result.rows;
-    } catch (error) {
-      console.error('Error exporting prompts:', error);
-      throw error;
-    }
+    const rows = await Prompt.findAll({
+      include: [
+        { model: User, as: 'user', attributes: ['name', 'phone', 'created_at'] },
+        { model: Category, as: 'category', attributes: ['name'] },
+        { model: SubCategory, as: 'subCategory', attributes: ['name'] }
+      ],
+      attributes: {
+        include: [
+          [fn('LENGTH', col('response')), 'response_length'],
+          [fn('LENGTH', col('prompt')), 'prompt_length'],
+          [literal('TIMESTAMPDIFF(DAY, created_at, NOW())'), 'days_ago']
+        ]
+      },
+      order: [['created_at', 'DESC']]
+    });
+
+    return rows.map(r => r.toJSON());
   }
 }
 

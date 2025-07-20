@@ -1,9 +1,10 @@
-// backend/src/controllers/adminController.js
 const userService = require('../services/userService');
 const promptService = require('../services/promptService');
 const categoryService = require('../services/categoryService');
+const { Parser } = require('json2csv');
 
 class AdminController {
+  
   async getDashboardStats(req, res) {
     try {
       const stats = await Promise.all([
@@ -90,41 +91,6 @@ class AdminController {
     }
   }
 
-  async getUserAnalytics(req, res) {
-    try {
-      const { userId } = req.params;
-      const analytics = await userService.getUserAnalytics(userId);
-      
-      res.json({
-        success: true,
-        data: analytics
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch user analytics',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-  }
-
-  async getCategoryAnalytics(req, res) {
-    try {
-      const analytics = await categoryService.getCategoryAnalytics();
-      
-      res.json({
-        success: true,
-        data: analytics
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch category analytics',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-  }
-
   async exportData(req, res) {
     try {
       const { type, format = 'json' } = req.query;
@@ -147,18 +113,22 @@ class AdminController {
           });
       }
 
+      const filename = `${type}.${format}`;
+
       if (format === 'csv') {
+        const parser = new Parser();
+        const csv = parser.parse(data);
         res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename=${type}.csv`);
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        return res.send(csv);
       } else {
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Disposition', `attachment; filename=${type}.json`);
-      }
-
-      res.json({
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        return res.json({
         success: true,
         data
       });
+      }
     } catch (error) {
       res.status(500).json({
         success: false,
