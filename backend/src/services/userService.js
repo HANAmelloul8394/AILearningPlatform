@@ -1,51 +1,242 @@
-const { query } = require('../config/db');
+const { User, Prompt, Category, SubCategory } = require('../models');
+const { ValidationError, NotFoundError,AuthenticationError } = require('../utils/errorFactory');
+const {
+  validatePassword,
+  validateUserName,
+  validatePhoneNumber,
+  validatePagination
+} = require('../utils/validationUtils');
+const { Op, fn, col } = require('../../config/sequelize');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken'); 
 
 class UserService {
-  async getUserCount() {
-    try {
-      const result = await query('SELECT COUNT(*) as count FROM users');
-      return parseInt(result.rows[0].count);
-    } catch (error) {
-      console.error('Error getting user count:', error);
-      return 0;
+ 
+  async createUser(userData) {
+    const { name, phone, password } = userData;
+    const role = phone === process.env.ADMIN_PHONE ? 'admin' : 'user';
+    const nameValidation = validateUserName(name);
+    const phoneValidation = validatePhoneNumber(phone);
+    const passValidation = validatePassword(password);
+  
+    if (!nameValidation.isValid || !phoneValidation.isValid || !passValidation.isValid) {
+      throw new ValidationError([
+        nameValidation.error,
+        phoneValidation.error,
+        passValidation.error
+      ].filter(Boolean).join(', '));
     }
+  
+    try {
+      const existingUser = await User.findOne({ where: { phone: phoneValidation.sanitized } });
+      if (existingUser) {
+        throw new ValidationError('Phone number already exists');
+      }
+  
+      const hashedPassword = await bcrypt.hash(passValidation.value, 10);
+  
+      const user = await User.create({
+        name: nameValidation.sanitized,
+        phone: phoneValidation.sanitized,
+        password: hashedPassword,
+        role: role
+      });
+  
+      return user.toJSON();
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  async getAllUsers(options = {}) {
+    
+     const { page = 1, limit = 10, search = '' } = options;
+
+    const paginationValidation = validatePagination({ page, limit });
+    if (!paginationValidation.isValid) {
+      throw new ValidationError(paginationValidation.errors.join(', '));
+    }
+
+    const { offset } = paginationValidation.values;
+
+    const whereClause = search ? {
+      [Op.or]: [
+        { name: { [Op.like]: `%${search}%` } },
+        { phone: { [Op.like]: `%${search}%` } }
+      ]
+    } : {};
+
+    const { count: total, rows: users } = await User.findAndCountAll({
+      where: whereClause,
+      include: [
+        {
+          model: Prompt,
+          as: 'prompts',
+          attributes: [],
+          required: false
+        }
+      ],
+      attributes: {
+        include: [
+          [
+            fn('COUNT', col('prompts.id')),
+            'prompt_count'
+          ]
+        ]
+      },
+      group: ['User.id'],
+      order: [['created_at', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      subQuery: false,
+      distinct: true
+    });
+
+    return {
+      users: users.map(user => user.toJSON()),
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    };
+  }
+
+  async getUserById(userId) {
+
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    return user.toJSON();
+  }
+
+  async getUserHistory(userId, options = {}) {
+    
+  
+    const {
+      page = 1,
+      limit = 10
+    } = options;
+  
+    const paginationValidation = validatePagination({ page, limit });
+    if (!paginationValidation.isValid) {
+      throw new ValidationError(paginationValidation.errors.join(', '));
+    }
+  
+    const { offset } = paginationValidation.values;
+  
+    const { count: total, rows: prompts } = await Prompt.findAndCountAll({
+      where: { user_id: userId },
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['name']
+        },
+        {
+          model: SubCategory,
+          as: 'subCategory',
+          attributes: ['name'],
+          required: false
+        }
+      ],
+      order: [['created_at', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+  
+    return {
+      prompts: prompts.map(prompt => {
+        const promptData = prompt.toJSON();
+        return {
+          ...promptData,
+          category_name: promptData.category?.name,
+          sub_category_name: promptData.subCategory?.name
+        };
+      }),
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    };
+  }  
+
+  async deleteUser(userId) {
+    
+    const deletedRows = await User.destroy({
+      where: { id: userId }
+    });
+
+    if (deletedRows === 0) {
+      throw new NotFoundError('User not found');
+    }
+
+    return true;
+  }
+
+  async exportUsers() {
+    const users = await User.findAll({
+      attributes: ['id', 'name', 'phone', 'role', 'created_at'],
+      order: [['created_at', 'DESC']]
+    });
+  
+    return users.map(user => user.toJSON());
   }
 
   async getAllUsersWithHistory(options = {}) {
     const { page = 1, limit = 10, search = '' } = options;
-    const offset = (page - 1) * limit;
-
-    try {
-      let queryText = `
-        SELECT u.*, COUNT(p.id) as prompt_count
-        FROM users u
-        LEFT JOIN prompts p ON u.id = p.user_id
-      `;
-      const params = [];
-
-      if (search) {
-        queryText += ` WHERE u.name ILIKE $1 OR u.phone ILIKE $1`;
-        params.push(`%${search}%`);
-      }
-
-      queryText += ` GROUP BY u.id ORDER BY u.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
-      params.push(limit, offset);
-
-      const result = await query(queryText, params);
-      
-      // Get total count
-      let countQuery = 'SELECT COUNT(*) FROM users';
-      const countParams = [];
-      if (search) {
-        countQuery += ' WHERE name ILIKE $1 OR phone ILIKE $1';
-        countParams.push(`%${search}%`);
-      }
-      
-      const countResult = await query(countQuery, countParams);
-      const total = parseInt(countResult.rows[0].count);
+  
+    const paginationValidation = validatePagination({ page, limit });
+    if (!paginationValidation.isValid) {
+      throw new ValidationError(paginationValidation.errors.join(', '));
+    }
+  
+    const { offset } = paginationValidation.values;
+  
+    const whereClause = search ? {
+      [Op.or]: [
+        { name: { [Op.like]: `%${search}%` } },
+        { phone: { [Op.like]: `%${search}%` } }
+      ]
+    } : {};
+  
+    const { count: total, rows: users } = await User.findAndCountAll({
+      where: whereClause,
+      include: [
+        {
+          model: Prompt,
+          as: 'prompts',
+          include: [
+            { model: Category, as: 'category', attributes: ['name'] },
+            { model: SubCategory, as: 'subCategory', attributes: ['name'], required: false }
+          ],
+          required: false
+        }
+      ],
+      order: [['created_at', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      distinct: true
+    });
+  
+    const usersWithHistory = users.map(user => {
+      const userData = user.toJSON();
+      userData.prompts = userData.prompts.map(prompt => ({
+        ...prompt,
+        category_name: prompt.category?.name,
+        sub_category_name: prompt.subCategory?.name
+      }));
+      return userData;
+    });
 
       return {
-        users: result.rows,
+      users: usersWithHistory,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -53,55 +244,51 @@ class UserService {
           totalPages: Math.ceil(total / limit)
         }
       };
-    } catch (error) {
-      console.error('Error getting users with history:', error);
-      throw error;
-    }
   }
 
-  async getUserAnalytics(userId) {
-    try {
-      const [promptCount, categoryCount, recentActivity] = await Promise.all([
-        query('SELECT COUNT(*) as count FROM prompts WHERE user_id = $1', [userId]),
-        query('SELECT COUNT(DISTINCT category_id) as count FROM prompts WHERE user_id = $1', [userId]),
-        query(`
-          SELECT DATE(created_at) as date, COUNT(*) as count 
-          FROM prompts 
-          WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
-          GROUP BY DATE(created_at) 
-          ORDER BY date DESC
-        `, [userId])
-      ]);
+  async getMe(userFromRequest) {
+    if (!userFromRequest) {
+      throw new NotFoundError('User not found');
+    }
 
       return {
-        totalPrompts: parseInt(promptCount.rows[0].count),
-        categoriesUsed: parseInt(categoryCount.rows[0].count),
-        recentActivity: recentActivity.rows,
-        avgPromptsPerDay: recentActivity.rows.length > 0 
-          ? (parseInt(promptCount.rows[0].count) / 30).toFixed(1) 
-          : 0
-      };
-    } catch (error) {
-      console.error('Error getting user analytics:', error);
-      throw error;
-    }
+      id: userFromRequest.id,
+      name: userFromRequest.name,
+      phone: userFromRequest.phone
+    };
   }
 
-  async exportUsers() {
-    try {
-      const result = await query(`
-        SELECT u.*, COUNT(p.id) as prompt_count
-        FROM users u
-        LEFT JOIN prompts p ON u.id = p.user_id
-        GROUP BY u.id
-        ORDER BY u.created_at DESC
-      `);
-      return result.rows;
-    } catch (error) {
-      console.error('Error exporting users:', error);
-      throw error;
+  async login({ phone, password, name }) {
+    if (!phone || !password || !name) {
+      throw new ValidationError('Phone, name and password are required');
     }
+
+    const user = await User.findOne({
+      where: { phone },
+      attributes: ['id', 'name', 'phone', 'password', 'role']
+    });
+    const isMatch = await bcrypt.compare(password, user.password);
+    
+    if (!user || !isMatch) {
+      throw new AuthenticationError('Invalid credentials. Please create an account or check your credentials.');
+    }
+
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: '2h'
+    });
+
+    console.log(user.toJSON());
+    return {
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        role: user.role
+    }
+    };
   }
+
 }
 
 module.exports = new UserService();
