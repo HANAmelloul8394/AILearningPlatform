@@ -1,144 +1,83 @@
-// backend/src/controllers/categoryController.js
-const { pool } = require('../config/db.js');
-const { validationResult } = require('express-validator');
+const categoryService = require('../services/categoryService');
 
 class CategoryController {
-  async createCategory(req, res) {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          message: 'Validation errors',
-          errors: errors.array()
-        });
-      }
+  // async createCategory(req, res, next) {
+  //   try {
+  //     const category = await categoryService.createCategory(req.body.name);
 
-      const { name } = req.body;
-      const result = await pool.query(
-        'INSERT INTO categories (name) VALUES ($1) RETURNING *',
-        [name]
-      );
-      
-      res.status(201).json({
-        success: true,
-        message: 'Category created successfully',
-        data: result.rows[0]
-      });
-    } catch (error) {
-      if (error.code === '23505') {
-        return res.status(400).json({
-          success: false,
-          message: 'Category already exists'
-        });
-      }
-      
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-  }
+  //     res.status(201).json({
+  //       success: true,
+  //       message: 'Category created successfully',
+  //       data: category
+  //     });
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // }
 
-  async getAllCategories(req, res) {
+  async getAllCategories(req, res, next) {
     try {
-      const result = await pool.query('SELECT * FROM categories ORDER BY name');
+      const categories = await categoryService.getAllCategories();
       
       res.json({
         success: true,
-        data: result.rows
+        data: categories
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch categories',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      next(error);
     }
   }
 
-  async getCategoryById(req, res) {
+  async getCategoryById(req, res, next) {
     try {
-      const { id } = req.params;
-      const result = await pool.query('SELECT * FROM categories WHERE id = $1', [id]);
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Category not found'
-        });
-      }
+      const category = await categoryService.getCategoryById(req.params.id);
 
       res.json({
         success: true,
-        data: result.rows[0]
+        data: category
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch category',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      next(error);
     }
   }
 
-  async createSubCategory(req, res) {
+  async createSubCategory(req, res, next) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          message: 'Validation errors',
-          errors: errors.array()
-        });
-      }
-
-      const { name, category_id } = req.body;
-      const result = await pool.query(
-        'INSERT INTO sub_categories (name, category_id) VALUES ($1, $2) RETURNING *',
-        [name, category_id]
-      );
+      const subCategory = await categoryService.createSubCategory(req.body);
       
       res.status(201).json({
         success: true,
         message: 'Sub-category created successfully',
-        data: result.rows[0]
+        data: subCategory
       });
     } catch (error) {
-      if (error.code === '23503') {
-        return res.status(400).json({
-          success: false,
-          message: 'Category does not exist'
-        });
-      }
-      
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      next(error);
     }
   }
 
-  async getSubCategories(req, res) {
+  async getSubCategories(req, res, next) {
     try {
-      const { categoryId } = req.params;
-      const result = await pool.query(
-        'SELECT * FROM sub_categories WHERE category_id = $1 ORDER BY name',
-        [categoryId]
-      );
+      const subCategories = await categoryService.getSubCategories(req.params.categoryId);
       
       res.json({
         success: true,
-        data: result.rows
+        data: subCategories
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch sub-categories',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      next(error);
+    }
+  }
+  
+  async exportCategories(req, res, next) {
+    try {
+      const data = await categoryService.exportCategories();
+      res.json({
+        success: true,
+        data
       });
+  
+    } catch (error) {
+      next(error);
     }
   }
 }

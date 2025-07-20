@@ -1,49 +1,89 @@
-const { query } = require('../config/db');
+const { Category, SubCategory } = require('../models');
+const {ValidationError,NotFoundError,} = require('../utils/errorFactory');
+const {validateCategoryName,validateCategoryId} = require('../utils/validationUtils');
 
 class CategoryService {
-  async getCategoryCount() {
-    try {
-      const result = await query('SELECT COUNT(*) as count FROM categories');
-      return parseInt(result.rows[0].count);
-    } catch (error) {
-      console.error('Error getting category count:', error);
-      return 0;
-    }
+  // async createCategory(name) {
+  //   const validation = validateCategoryName(name);
+  //   if (!validation.isValid) throw new ValidationError(validation.error);
+
+  //   const exists = await Category.findOne({ where: { name: validation.sanitized } });
+  //   if (exists) throw new ValidationError('Category already exists');
+
+  //   const category = await Category.create({ name: validation.sanitized });
+  //   return category.toJSON();
+  // }
+
+  async getAllCategories() {
+    const categories = await Category.findAll({
+      order: [['name', 'ASC']]
+    });
+    return categories.map(c => c.toJSON());
   }
 
-  async getCategoryAnalytics() {
-    try {
-      const result = await query(`
-        SELECT c.id, c.name, 
-               COUNT(p.id) as prompt_count,
-               COUNT(DISTINCT p.user_id) as unique_users
-        FROM categories c
-        LEFT JOIN prompts p ON c.id = p.category_id
-        GROUP BY c.id, c.name
-        ORDER BY prompt_count DESC
-      `);
-      return result.rows;
-    } catch (error) {
-      console.error('Error getting category analytics:', error);
-      return [];
+  async getCategoryById(id) {
+    const idValidation = validateCategoryId(id, 'category');
+    if (!idValidation.isValid) throw new ValidationError(idValidation.error);
+
+    const category = await Category.findByPk(idValidation.value);
+    if (!category) throw new NotFoundError('Category not found');
+
+    return category.toJSON();
+  }
+
+  async createSubCategory({ name, category_id }) {
+    const nameValidation = validateCategoryName(name);
+    const idValidation = validateCategoryId(category_id, 'category');
+
+    if (!nameValidation.isValid || !idValidation.isValid) {
+      throw new ValidationError(
+        [nameValidation.error, idValidation.error].filter(Boolean).join(', ')
+      );
     }
+
+    const category = await Category.findByPk(idValidation.value);
+    if (!category) throw new NotFoundError('Category not found');
+
+    const subCategory = await SubCategory.create({
+      name: nameValidation.sanitized,
+      category_id: idValidation.value
+    });
+
+    return subCategory.toJSON();
+  }
+
+  async getSubCategories(categoryId) {
+    const idValidation = validateCategoryId(categoryId, 'category');
+    if (!idValidation.isValid) throw new ValidationError(idValidation.error);
+
+    const subCategories = await SubCategory.findAll({
+      where: { category_id: idValidation.value },
+      order: [['name', 'ASC']]
+    });
+
+    return subCategories.map(sc => sc.toJSON());
   }
 
   async exportCategories() {
-    try {
-      const result = await query(`
-        SELECT c.*, COUNT(sc.id) as sub_category_count, COUNT(p.id) as prompt_count
-        FROM categories c
-        LEFT JOIN sub_categories sc ON c.id = sc.category_id
-        LEFT JOIN prompts p ON c.id = p.category_id
-        GROUP BY c.id
-        ORDER BY c.name
-      `);
-      return result.rows;
-    } catch (error) {
-      console.error('Error exporting categories:', error);
-      throw error;
-    }
+    const categories = await Category.findAll({
+      include: [
+        {
+          model: SubCategory,
+          as: 'subCategories',
+          attributes: ['id', 'name'],
+          required: false
+        }
+      ],
+      order: [['created_at', 'DESC']]
+    });return categories.map(category => {
+      const cat = category.toJSON();
+      return {
+        id: cat.id,
+        name: cat.name,
+        created_at: cat.created_at,
+        subCategories: cat.subCategories || []
+      };
+    });
   }
 }
 
