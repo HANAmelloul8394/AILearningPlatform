@@ -3,16 +3,17 @@ const {ValidationError,NotFoundError,} = require('../utils/errorFactory');
 const {validateCategoryName,validateCategoryId} = require('../utils/validationUtils');
 
 class CategoryService {
-  // async createCategory(name) {
-  //   const validation = validateCategoryName(name);
-  //   if (!validation.isValid) throw new ValidationError(validation.error);
 
-  //   const exists = await Category.findOne({ where: { name: validation.sanitized } });
-  //   if (exists) throw new ValidationError('Category already exists');
+  async createCategory(name) {
+    const validation = validateCategoryName(name);
+    if (!validation.isValid) throw new ValidationError(validation.error);
 
-  //   const category = await Category.create({ name: validation.sanitized });
-  //   return category.toJSON();
-  // }
+    const exists = await Category.findOne({ where: { name: validation.sanitized } });
+    if (exists) throw new ValidationError('Category already exists');
+
+    const category = await Category.create({ name: validation.sanitized });
+    return category.toJSON();
+  }
 
   async getAllCategories() {
     const categories = await Category.findAll({
@@ -85,6 +86,7 @@ class CategoryService {
       };
     });
   }
+
 }
 
 module.exports = new CategoryService();

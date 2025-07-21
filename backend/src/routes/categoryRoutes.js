@@ -6,7 +6,11 @@ const { handleAsync } = require('../middleware/asyncHandler');
 
 const router = express.Router();
 
-// router.post('/', validateCategory, handleValidation, handleAsync(categoryController.createCategory));
+router.post('/',
+    validateCategory,
+    handleValidation,
+    handleAsync(categoryController.createCategory));
+
 router.get('/',
    handleAsync(categoryController.getAllCategories));
 
@@ -24,9 +28,6 @@ router.post('/sub-categories',
    validateSubCategory,
    handleValidation,
    handleAsync(categoryController.createSubCategory));
-
-router.get('/export-categories',
-    handleAsync(categoryController.exportCategories));
 
 
 module.exports = router;

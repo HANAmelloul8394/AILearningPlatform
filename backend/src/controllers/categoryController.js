@@ -1,19 +1,19 @@
 const categoryService = require('../services/categoryService');
 
 class CategoryController {
-  // async createCategory(req, res, next) {
-  //   try {
-  //     const category = await categoryService.createCategory(req.body.name);
+  async createCategory(req, res, next) {
+    try {
+      const category = await categoryService.createCategory(req.body.name);
 
-  //     res.status(201).json({
-  //       success: true,
-  //       message: 'Category created successfully',
-  //       data: category
-  //     });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // }
+      res.status(201).json({
+        success: true,
+        message: 'Category created successfully',
+        data: category
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 
   async getAllCategories(req, res, next) {
     try {
@@ -68,18 +68,6 @@ class CategoryController {
     }
   }
   
-  async exportCategories(req, res, next) {
-    try {
-      const data = await categoryService.exportCategories();
-      res.json({
-        success: true,
-        data
-      });
-  
-    } catch (error) {
-      next(error);
-    }
-  }
 }
 
 module.exports = new CategoryController();
