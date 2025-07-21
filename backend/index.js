@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 app.use('/api/users', require('./src/routes/userRoutes'));
 app.use('/api/categories', require('./src/routes/categoryRoutes'));
 app.use('/api/prompts', require('./src/routes/promptRoutes'));
-app.use('/api/admin', require('./src/routes/adminRoutes'));
+// app.use('/api/admin', require('./src/routes/adminRoutes'));
 
 app.get('/', (req, res) => {
   res.json({

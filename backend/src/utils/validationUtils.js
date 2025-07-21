@@ -87,21 +87,21 @@ function validatePhoneNumber(phone) {
   const cleanPhone = phone.trim();
 
   // Basic format validation
-  const phoneRegex = /^[\+]?[1-9][\d\-\s\(\)]{7,15}$/;
+  const phoneRegex = /^05\d{8}$/;
   if (!phoneRegex.test(cleanPhone)) {
     return {
       isValid: false,
-      error: 'Invalid phone number format. Expected format: +1234567890 or (123) 456-7890'
+      error: 'Invalid phone number format. Expected format: 0512345678'
     };
   }
 
   // Extract only digits
   const digitsOnly = cleanPhone.replace(/\D/g, '');
 
-  if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+  if (digitsOnly.length !=10 ) {
     return {
       isValid: false,
-      error: `Phone number must contain 7-15 digits. Found: ${digitsOnly.length}`
+      error: `Phone number must contain 10 digits. Found: ${digitsOnly.length}`
     };
   }
 

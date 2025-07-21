@@ -2,12 +2,12 @@ const userService = require('../services/userService');
 
 class UserController {
   createUser = async (req, res) => {
-    const user = await userService.createUser(req.body);
+    const data = await userService.createUser(req.body);
       
       res.status(201).json({
         success: true,
         message: 'User created successfully',
-      data: user
+      data: data
       });
   };
 
@@ -47,12 +47,12 @@ class UserController {
 
   getMe = async (req, res) => {
     const me = await userService.getMe(req.user);
-    res.json({ success: true, user: me });
+    res.json({ success: true, user: me , token: req.token });
   };
 
   login = async (req, res) => {
     const result = await userService.login(req.body);
-    res.json({ success: true, ...result });
+    res.json({ success: true, user: result.user, token: result.token });
   };
 }
 

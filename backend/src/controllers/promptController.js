@@ -19,6 +19,7 @@ class PromptController {
       data: result
       });
   };
+  
   getAllPromptsWithDetails = async (req, res) => {
     const result = await promptService.getAllPromptsWithDetails(req.query);
 

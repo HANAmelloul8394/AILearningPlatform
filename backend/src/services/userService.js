@@ -1,5 +1,5 @@
 const { User, Prompt, Category, SubCategory } = require('../models');
-const { ValidationError, NotFoundError,AuthenticationError } = require('../utils/errorFactory');
+const { ValidationError, NotFoundError } = require('../utils/errorFactory');
 const {
   validatePassword,
   validateUserName,
@@ -15,6 +15,7 @@ class UserService {
   async createUser(userData) {
     const { name, phone, password } = userData;
     const role = phone === process.env.ADMIN_PHONE ? 'admin' : 'user';
+  
     const nameValidation = validateUserName(name);
     const phoneValidation = validatePhoneNumber(phone);
     const passValidation = validatePassword(password);
@@ -42,7 +43,22 @@ class UserService {
         role: role
       });
   
-      return user.toJSON();
+      const token = jwt.sign(
+        { id: user.id, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '2h' }
+      );
+  
+      return {
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          phone: user.phone,
+          role: user.role
+        }
+      };
+  
     } catch (error) {
       throw error;
     }
@@ -116,7 +132,6 @@ class UserService {
 
   async getUserHistory(userId, options = {}) {
     
-  
     const {
       page = 1,
       limit = 10
@@ -254,30 +269,45 @@ class UserService {
       return {
       id: userFromRequest.id,
       name: userFromRequest.name,
-      phone: userFromRequest.phone
+      role: userFromRequest.role
     };
   }
 
-  async login({ phone, password, name }) {
-    if (!phone || !password || !name) {
-      throw new ValidationError('Phone, name and password are required');
+  async login(credentials) {
+    const { phone, password } = credentials;
+  
+    const phoneValidation = validatePhoneNumber(phone);
+    const passValidation = validatePassword(password);
+  
+    if (!phoneValidation.isValid || !passValidation.isValid) {
+      throw new ValidationError([
+        phoneValidation.error,
+        passValidation.error
+      ].filter(Boolean).join(', '));
     }
-
-    const user = await User.findOne({
-      where: { phone },
-      attributes: ['id', 'name', 'phone', 'password', 'role']
-    });
-    const isMatch = await bcrypt.compare(password, user.password);
-    
-    if (!user || !isMatch) {
-      throw new AuthenticationError('Invalid credentials. Please create an account or check your credentials.');
+  
+    const user = await User.findOne({ where: { phone: phoneValidation.sanitized } });
+  
+    if (!user) {
+      throw new ValidationError('Invalid phone or password');
     }
-
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: '2h'
-    });
-
-    console.log(user.toJSON());
+  
+    const isMatch = await bcrypt.compare(passValidation.value, user.password);
+    if (!isMatch) {
+      throw new ValidationError('Invalid phone or password');
+    }
+  
+    if (user.phone === process.env.ADMIN_PHONE && user.role !== 'admin') {
+      user.role = 'admin';
+      await user.save();
+    }
+  
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '2h' }
+    );
+  
     return {
       token,
       user: {
@@ -285,9 +315,10 @@ class UserService {
         name: user.name,
         phone: user.phone,
         role: user.role
-    }
+      }
     };
   }
+  
 
 }
 

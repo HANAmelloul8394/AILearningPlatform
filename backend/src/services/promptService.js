@@ -148,7 +148,6 @@ class PromptService {
 
     const pagination = validatePagination(options);
     if (!pagination.isValid) throw new ValidationError(pagination.errors.join(', '));
-console.log(`Fetching prompts for user ID: ${validation.value} with pagination:`, pagination);
 
     const { offset, limit, page } = pagination.values;
 
@@ -219,7 +218,6 @@ console.log(`Fetching prompts for user ID: ${validation.value} with pagination:`
       });
       aiResponseText = aiResponse?.choices?.[0]?.message?.content || 'No content returned from AI';
     } catch (err) {
-      console.error('OpenAI error:', err);
       aiResponseText = `AI Error: ${err.message}`;
     }
 
