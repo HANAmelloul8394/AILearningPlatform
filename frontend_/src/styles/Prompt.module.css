@@ -1,0 +1,216 @@
+/* Prompt Page - Clean Green Theme */
+.promptContainer {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #fafafa;
+  min-height: 100vh;
+}
+
+.promptForm {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+  border: 1px solid #e8f5e8;
+  margin-bottom: 24px;
+}
+
+/* Header Section */
+.promptForm::before {
+  content: "Create New Learning Session";
+  display: block;
+  font-size: 24px;
+  font-weight: 600;
+  color: #2d5a3d;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.promptForm::after {
+  content: "Select a category and ask your question to get personalized AI-generated lessons.";
+  display: block;
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 32px;
+  text-align: center;
+  font-weight: 400;
+}
+
+/* Selection Section */
+.selectionSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.selectGroup {
+  position: relative;
+}
+
+.selectGroup label {
+  display: block;
+  font-weight: 500;
+  color: #2d5a3d;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.selectGroup select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #ffffff;
+  color: #374151;
+  transition: border-color 0.2s ease;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+.selectGroup select:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.selectGroup select:hover {
+  border-color: #9ca3af;
+}
+
+/* Prompt Section */
+.promptSection {
+  margin-bottom: 24px;
+}
+
+.promptSection label {
+  display: block;
+  font-weight: 500;
+  color: #2d5a3d;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.promptTextarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease;
+  background-color: #ffffff;
+  color: #374151;
+}
+
+.promptTextarea:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.promptTextarea::placeholder {
+  color: #9ca3af;
+}
+
+/* Submit Button */
+.submitButtonContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.submitButton {
+  padding: 12px 32px;
+  background-color: #059669;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-width: 120px;
+}
+
+.submitButton:hover {
+  background-color: #047857;
+}
+
+.submitButton:active {
+  background-color: #065f46;
+}
+
+/* Response Section */
+.responseSection {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #e8f5e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.responseSection h3 {
+  color: #2d5a3d;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.responseQuestion {
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #f0f9f4;
+  border-radius: 6px;
+  border-left: 3px solid #059669;
+}
+
+.responseQuestion strong {
+  color: #2d5a3d;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.responseContent {
+  background-color: #f9f9f9;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 16px;
+  white-space: pre-line;
+  line-height: 1.6;
+  color: #374151;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .promptContainer {
+    padding: 20px 16px;
+  }
+  
+  .promptForm {
+    padding: 24px;
+  }
+  
+  .selectionSection {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .submitButton {
+    width: 100%;
+  }
+  
+  .responseSection {
+    padding: 20px;
+  }
+}
