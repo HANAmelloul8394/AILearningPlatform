@@ -1,6 +1,6 @@
 const { body, param, query } = require('express-validator');
 exports.validateCategory = [
-    body('name').trim().isLength({ min: 2, max: 50 }).withMessage('Category name must be between 2-50 characters')
+    // body('name').trim().isLength({ min: 2, max: 50 }).withMessage('Category name must be between 2-50 characters')
   ];
   
   exports.validateSubCategory = [

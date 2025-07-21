@@ -1,0 +1,143 @@
+.homeContainer {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #fafafa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .welcomeMessage {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 48px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e8f5e8;
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+  }
+  
+  .welcomeMessage::before {
+    content: "Welcome to AI Learning Platform!";
+    display: block;
+    font-size: 28px;
+    font-weight: 600;
+    color: #2d5a3d;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  
+  .welcomeMessage::after {
+    content: "Your personalized AI-powered learning experience awaits. Select categories, ask questions, and get intelligent responses tailored to your learning journey.";
+    display: block;
+    color: #6b7280;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+  
+  /* Features Section */
+  .featuresSection {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    width: 100%;
+    max-width: 800px;
+  }
+  
+  .featureCard {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e8f5e8;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .featureCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+  
+  .featureCard::before {
+    content: "📚";
+    display: block;
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  
+  .featureCard:nth-child(2)::before {
+    content: "🤖";
+  }
+  
+  .featureCard:nth-child(3)::before {
+    content: "📈";
+  }
+  
+  .featureCard h3 {
+    color: #2d5a3d;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  
+  .featureCard p {
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+  }
+  
+  .ctaButton {
+    background-color: #059669;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 24px;
+  }
+  
+  .ctaButton:hover {
+    background-color: #047857;
+  }
+  
+  .ctaButton:active {
+    background-color: #065f46;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .homeContainer {
+      padding: 40px 16px;
+    }
+    
+    .welcomeMessage {
+      padding: 32px 24px;
+    }
+    
+    .welcomeMessage::before {
+      font-size: 24px;
+    }
+    
+    .welcomeMessage::after {
+      font-size: 14px;
+    }
+    
+    .featuresSection {
+      margin-top: 32px;
+      grid-template-columns: 1fr;
+    }
+  }

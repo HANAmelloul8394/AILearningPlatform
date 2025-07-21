@@ -16,20 +16,24 @@
   margin-bottom: 32px;
 }
 
+/* Table Styles */
+table,
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #fcf6f6;
+  background-color: #ffffff;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   border: 1px solid #e8f5e8;
 }
 
+thead,
 .admin-table thead {
   background-color: #f0f9f4;
 }
 
+th,
 .admin-table th {
   padding: 16px;
   text-align: left;
@@ -39,6 +43,7 @@
   border-bottom: 1px solid #e8f5e8;
 }
 
+td,
 .admin-table td {
   padding: 16px;
   border-bottom: 1px solid #f3f4f6;
@@ -46,20 +51,24 @@
   font-size: 14px;
 }
 
+tbody tr,
 .admin-table tbody tr {
   transition: background-color 0.2s ease;
 }
 
+tbody tr:hover,
 .admin-table tbody tr:hover {
   background-color: #f9fffe;
   cursor: pointer;
 }
 
+tbody tr:last-child td,
 .admin-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-/* Action Button */
+/* Action Buttons */
+button,
 .admin-table button {
   background-color: #dc2626;
   color: white;
@@ -70,12 +79,15 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  font-family: inherit;
 }
 
+button:hover,
 .admin-table button:hover {
   background-color: #b91c1c;
 }
 
+button:active,
 .admin-table button:active {
   background-color: #991b1b;
 }
@@ -97,11 +109,14 @@
     padding: 20px 16px;
   }
   
+  table,
   .admin-table {
     font-size: 12px;
   }
   
+  th,
   .admin-table th,
+  td,
   .admin-table td {
     padding: 12px 8px;
   }
@@ -112,6 +127,7 @@
 }
 
 @media (max-width: 640px) {
+  table,
   .admin-table {
     display: block;
     overflow-x: auto;

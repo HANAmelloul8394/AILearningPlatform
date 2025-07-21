@@ -28,6 +28,7 @@
   margin-bottom: 24px;
   text-decoration: none;
   display: inline-block;
+  font-family: inherit;
 }
 
 .backButton:hover {
@@ -74,6 +75,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  margin-left: 10px;
 }
 
 .deleteButton:hover {
@@ -144,8 +146,65 @@
   border: 1px solid #e5e7eb;
 }
 
+/* Default styling for standard li elements */
+.container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.container li {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e8f5e8;
+  position: relative;
+}
+
+.container li strong {
+  color: #2d5a3d;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.container li div {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.container li div:first-of-type {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.container li button {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-left: 10px;
+  margin-top: 8px;
+}
+
+.container li button:hover {
+  background-color: #b91c1c;
+}
+
 /* Empty State */
-.emptyState {
+.emptyState,
+.container p {
   text-align: center;
   color: #6b7280;
   font-size: 16px;
@@ -171,27 +230,62 @@
   .container {
     padding: 20px 16px;
   }
-  
-  .promptItem {
+
+  .promptItem,
+  .container li {
     padding: 20px;
   }
-  
+
   .promptHeader {
     flex-direction: column;
     gap: 12px;
     align-items: stretch;
   }
-  
+
   .promptMeta {
     grid-template-columns: 1fr;
     gap: 8px;
   }
-  
+
   .container h2 {
     font-size: 20px;
   }
-  
+
   .deleteButton {
     align-self: flex-start;
   }
+}
+
+.historyList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 2rem;
+}
+
+.rowHistory {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.rowHistory button{
+  align-self: center;
+}
+
+.rowData {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-right: 1px solid #e5e7eb;
+}
+
+.rowData>div {
+  display: flex;
+  flex-direction: row;
 }

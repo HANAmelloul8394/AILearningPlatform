@@ -4,95 +4,143 @@ An intelligent and modular learning platform powered by AI, enabling users to ge
 
 ## Overview
 
-AI Learning Platform leverages the power of OpenAI to allow users to create structured and personalized lessons based on topics of interest. The platform supports smart categorization, an intuitive UI, and an admin analytics dashboard.
+AI Learning Platform leverages OpenAI to allow users to create structured and personalized lessons based on topics of interest. Users can register, log in, select a category/subcategory, enter a prompt, and receive AI-generated learning content. Admins can view prompt history for all users.
 
 ## Architecture
 
-The platform is structured into two main services:
-
-- **Backend**: Node.js + Express API with PostgreSQL and OpenAI integration
-- **Frontend**: React.js web application
+* **Backend**: Node.js + Express API with MySQL + Sequelize ORM and OpenAI integration
+* **Frontend**: React.js SPA using Context API and React Router
 
 ## Tech Stack
 
-- **Backend**: Node.js, Express, PostgreSQL, OpenAI API, JWT, Helmet, CORS
-- **Frontend**: React.js, Axios, React Router, Context API
-- **DevOps**: Docker (optional), ESLint, dotenv
+* **Backend**: Node.js, Express, MySQL, Sequelize, OpenAI API, JWT, Helmet, CORS
+* **Frontend**: React.js, Axios, Context API
+* **DevOps**: Docker, Docker Compose, ESLint, dotenv
 
-## Getting Started
+## Features
+
+* AI-generated lesson based on user input
+* Secure login/register with JWT (stored in localStorage)
+* Prompt history per user
+* Admin dashboard for user/prompt management
+
+## Setup Instructions
 
 ### Prerequisites
 
-- Node.js 16+
-- PostgreSQL 12+
-- npm or yarn
-- OpenAI API key
+* Node.js 16+
+* Docker + Docker Compose
+* OpenAI API key
 
 ### Installation
 
 1. **Clone the repository:**
-   ```bash
-   git clone [your-repo-url]
-   cd AILearningPlatform
-   ```
 
-2. **Start the backend:**
-   ```bash
-   cd backend
-   npm install
-   cp .env.example .env
-   # configure your .env
-   npm run setup-db
-   npm run dev
-   ```
-
-3. **Start the frontend:**
-   ```bash
-   cd ../frontend
-   npm install
-   npm start
-   ```
-
-## Environment Variables
-
-### Backend (`backend/.env`)
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=AILearningPlatform
-DB_USER=postgres
-DB_PASSWORD=your_password
-
-OPENAI_API_KEY=your_openai_key
-
-PORT=5000
-NODE_ENV=development
-FRONTEND_URL=http://localhost:3000
-
-JWT_SECRET=your_jwt_secret
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+```bash
+git clone [https://github.com/HANAmelloul8394/AILearningPlatform.git]
+cd AILearningPlatform
 ```
 
-### Frontend (`frontend/.env`)
+2. **Configure environment variables:**
+   Create a `.env` file in the root:
+
 ```env
-REACT_APP_API_URL=http://localhost:5000
-REACT_APP_ENV=development
+DB_HOST=db
+DB_PORT=3306
+DB_NAME=ai_learning
+DB_USER=root
+DB_PASSWORD=example
+OPENAI_API_KEY=your_openai_key
+JWT_SECRET=your_secret
+FRONTEND_URL=http://localhost:3000
+PORT=5000
+```
+
+3. **Run using Docker Compose:**
+
+```bash
+docker-compose up --build
+```
+
+Frontend will be available at [http://localhost:3000](http://localhost:3000)
+Backend will run on [http://localhost:5000](http://localhost:5000)
+
+## Docker Compose
+
+The system includes 3 services:
+
+* **db**: MySQL 8.0 database
+* **backend**: Express API with Sequelize
+* **frontend**: React app with live reload
+
+### docker-compose.yml Highlights
+
+* Healthcheck on MySQL
+* `depends_on` ensures correct order
+* Volume persistence for database
+* Shared network between services
+
+## AI Integration
+
+* The backend sends prompts from users to the OpenAI API
+* Endpoint: `POST /prompts`
+* Example payload:
+
+```json
+{
+  "category_id": 1,
+  "sub_category_id": 2,
+  "prompt": "Explain how volcanoes work"
+}
+```
+
+* Example response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "response": "Volcanoes are geological formations that..."
+  }
+}
+```
+
+## Authentication
+
+* JWT-based login/register
+* Tokens stored in `localStorage`
+* Protected routes via middleware (e.g. `/users/me`, `/prompts/user/:id`)
+
+## Error Handling
+
+Centralized error handler returns:
+
+```json
+{
+  "success": false,
+  "error": "ValidationError",
+  "message": "Password must be at least 6 characters"
+}
 ```
 
 ## Folder Structure
 
 ```
 AILearningPlatform/
-├── backend/     # Node.js server
-├── frontend/    # React application
-└── docs/        # Documentation & specifications
+├── backend/       # Express API
+├── frontend/      # React App
+├── docker-compose.yml
+├── .env.example
+└── README.md
 ```
 
-## Testing
+## Screenshots Suggestions
 
-Basic unit and integration tests planned using Jest (backend) and React Testing Library (frontend).
-
+*  Login/Register page
+*  Prompt submission form
+*  Lesson generated view
+*  Prompt history per user
+*  Admin dashboard (user list + prompt logs)
 
 ## Contributing
 
@@ -104,4 +152,4 @@ Basic unit and integration tests planned using Jest (backend) and React Testing 
 
 ## License
 
-This project is licensed under the MIT License.
+Made with full of love!!😉😀

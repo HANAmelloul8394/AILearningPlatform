@@ -56,11 +56,13 @@ function PromptPage() {
   const handleCategoryChange = async (e) => {
     const value = e.target.value;
     if (value === '__new__') {
+      console.log('Creating new category',value);
+      
       const name = window.prompt('Enter new category name:');
       if (name) {
         try {
           const res = await apiService.post('/categories', { name });
-          const newCat = res.data.data;
+          const newCat = res.data;
           setCategories([...categories, newCat]);
           setSelectedCategory(newCat.id);
         } catch (err) {
@@ -82,7 +84,7 @@ function PromptPage() {
             name,
             category_id: selectedCategory,
           });
-          const newSub = res.data.data;
+          const newSub = res.data;
           setSubCategories([...subCategories, newSub]);
           setSelectedSubCategory(newSub.id);
         } catch (err) {

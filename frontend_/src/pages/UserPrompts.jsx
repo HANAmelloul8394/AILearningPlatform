@@ -4,6 +4,8 @@ import { useUserContext } from '../context/userContext';
 import Navbar from '../components/Navbar';
 import apiService from '../services/apiService';
 import handleApiError from '../utils/errorHandler';
+import styles from '../styles/UserPrompt.module.css'; 
+
 
 function UserPrompts(prop) {
   const { id } = useParams();
@@ -46,7 +48,7 @@ function UserPrompts(prop) {
     return (
       <>
         <Navbar />
-        <div className="container">
+        <div className={styles.container}>
           <p>User data not found. Please go back and try again.</p>
           {prop.state === 'admin' && (
             <button onClick={() => navigate('/admin/users')}>← Back to users list</button>
@@ -59,24 +61,25 @@ function UserPrompts(prop) {
   return (
     <>
       <Navbar />
-      <div className="container">
+      <div className={styles.container}>
         {prop.state === 'admin' && (
           <button onClick={() => navigate('/admin/users')}>← Back to users list</button>
         )}
         <h2>Prompt History for {prop.state === 'admin' ? `user ${id}` : user.name}</h2>
 
         {prompts.length > 0 ? (
-          <ul>
+          <ul className={styles.historyList}>
             {prompts.map((p) => (
-              <li key={p.id}>
+              <li key={p.id} className={styles.rowHistory}>
+                <div className={styles.rowData}>
                 <strong>{new Date(p.created_at).toLocaleString()}:</strong>
-                 <div>category: {p.category_name} </div>
-                <div>sub category: {p.sub_category_name}</div>
-                <div>prompt: {p.prompt}</div>
-                <div>response: {p.response}</div>
+                 <div><strong>category: </strong>{p.category_name} </div>
+                <div><strong>sub category: </strong>{p.sub_category_name}</div>
+                <div><strong>prompt: </strong>{p.prompt}</div>
+                <div><strong>response: </strong>{p.response}</div>
+                </div>
                 <button
                   onClick={() => handleDeletePrompt(p.id)}
-                  style={{ marginLeft: '10px', color: 'red' }}
                 >
                   Delete
                 </button>
